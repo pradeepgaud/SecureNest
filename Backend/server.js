@@ -12,7 +12,8 @@ const client = new MongoClient(url);
 // Database Name
 const dbName = 'secureNest';
 const app = express()
-const port = 3000
+// const port = 3000
+const PORT = process.env.PORT || 3000;
 app.use(bodyparser.json())
 app.use(cors())
 client.connect()
@@ -48,6 +49,4 @@ app.delete('/', async (req, res) => {
     res.send({success:true, result:findResult})
 })
 
-app.listen(port, () => {
-    console.log(`Example app listening on http://localhost:${port}`)
-})
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
