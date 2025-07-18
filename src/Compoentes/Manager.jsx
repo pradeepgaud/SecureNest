@@ -12,16 +12,23 @@ import { ToastContainer, toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import "react-toastify/dist/ReactToastify.css";
 
+// ✅ Get backend URL from .env file
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 function Manager() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ site: "", username: "", password: "" });
   const [passwordArry, setPasswordArry] = useState([]);
-  const [editId, setEditId] = useState(null); // track edit mode
+  const [editId, setEditId] = useState(null);
 
   const getpassword = async () => {
-    let req = await fetch("http://localhost:3000/");
-    let passwords = await req.json();
-    setPasswordArry(passwords);
+    try {
+      let req = await fetch(`${backendUrl}/`);
+      let passwords = await req.json();
+      setPasswordArry(passwords);
+    } catch (error) {
+      toast.error("Failed to fetch passwords.");
+    }
   };
 
   useEffect(() => {
@@ -53,17 +60,15 @@ function Manager() {
       const updated = [...passwordArry, passwordObj];
       setPasswordArry(updated);
 
-      // If editing, delete old one first
       if (editId) {
-        await fetch("http://localhost:3000/", {
+        await fetch(`${backendUrl}/`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editId }),
         });
       }
 
-      // Save new/edited password
-      const res = await fetch("http://localhost:3000/", {
+      const res = await fetch(`${backendUrl}/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(passwordObj),
@@ -75,7 +80,6 @@ function Manager() {
           autoClose: 3000,
           theme: "dark",
         });
-        // Reset form and editId
         setForm({ site: "", username: "", password: "" });
         setEditId(null);
       } else {
@@ -91,7 +95,7 @@ function Manager() {
       const updated = passwordArry.filter((item) => item.id !== id);
       setPasswordArry(updated);
 
-      await fetch("http://localhost:3000/", {
+      await fetch(`${backendUrl}/`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -125,7 +129,6 @@ function Manager() {
   return (
     <>
       <ToastContainer />
-      {/* UI background and layout */}
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-center">
           <span className="text-green-500">&lt;</span>Secure
@@ -135,7 +138,6 @@ function Manager() {
           Your Password Manager
         </p>
 
-        {/* Form inputs */}
         <div className="flex flex-col gap-4 sm:gap-6 p-4 text-black items-center">
           <input
             value={form.site}
@@ -185,7 +187,6 @@ function Manager() {
           </button>
         </div>
 
-        {/* Table display */}
         <div className="passwords mt-8">
           <h2 className="font-bold py-4 text-xl sm:text-2xl">Your Passwords</h2>
 
@@ -263,6 +264,3 @@ function Manager() {
 }
 
 export default Manager;
-
-
-
