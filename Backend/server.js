@@ -14,15 +14,13 @@ const port = process.env.PORT || 3000;
 
 // CORS configuration - Important!
 app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
-    credentials: false // Important: false kar dein agar * use kar rahe hain
-}));
-
-app.options('*', cors());
-
-// app.use(bodyparser.json())
+    origin: [
+        'http://localhost:3000', 
+        'http://localhost:5173', 
+        'secure-nest-2gtq-git-main-pradeep-gauds-projects.vercel.app'  // Yahan apna Vercel URL dalein
+    ],
+    credentials: true
+}))
 
 app.use(bodyparser.json())
 
@@ -53,10 +51,6 @@ app.get('/', async (req, res) => {
         res.json(passwords)
     } catch (error) {
         console.error("Error fetching passwords:", error);
-        fetch('https://securenest-j2mg.onrender.com/')
-            .then(res => res.json())
-            .then(data => console.log(data))
-            .catch(err => console.error(err))
         res.status(500).json({ error: error.message })
     }
 })
@@ -72,7 +66,7 @@ app.post('/', async (req, res) => {
         const collection = db.collection('passwords');
         const result = await collection.insertOne(password)
         console.log("Password saved with ID:", result.insertedId);
-        res.json({ success: true, result: result })
+        res.json({success: true, result: result})
     } catch (error) {
         console.error("Error saving password:", error);
         res.status(500).json({ error: error.message })
@@ -90,7 +84,7 @@ app.delete('/', async (req, res) => {
         const collection = db.collection('passwords');
         const result = await collection.deleteOne({ id: id })
         console.log("Delete result:", result.deletedCount);
-        res.json({ success: true, result: result })
+        res.json({success: true, result: result})
     } catch (error) {
         console.error("Error deleting password:", error);
         res.status(500).json({ error: error.message })
