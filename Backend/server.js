@@ -2,51 +2,94 @@ const express = require('express')
 const dotenv = require('dotenv')
 const { MongoClient } = require('mongodb');
 const bodyparser = require('body-parser')
-const cors  = require('cors')
+const cors = require('cors')
+
 dotenv.config()
 
-// Connection URL
-const url = 'mongodb://localhost:27017';
+const url = process.env.MONGODB_URI;
 const client = new MongoClient(url);
-
-// Database Name
 const dbName = 'secureNest';
 const app = express()
-// const port = 3000
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
+
+// CORS configuration - Important!
+app.use(cors({
+    origin: [
+        'http://localhost:3000', 
+        'http://localhost:5173', 
+        'https://your-vercel-app.vercel.app'  // Yahan apna Vercel URL dalein
+    ],
+    credentials: true
+}))
+
 app.use(bodyparser.json())
-app.use(cors())
-client.connect()
 
+// Database connection
+let db;
+client.connect().then(() => {
+    console.log("Connected to MongoDB Atlas");
+    db = client.db(dbName);
+}).catch(err => {
+    console.error("MongoDB connection error:", err);
+});
 
-// await client.connect();
+// Test route
+app.get('/test', (req, res) => {
+    res.json({ message: 'Backend is working!', timestamp: new Date() })
+})
 
-//get all the password
+// Get all passwords
 app.get('/', async (req, res) => {
-    const db = client.db(dbName);
-    const collection = db.collection('passwords');
-    const findResult = await collection.find({}).toArray();
-    res.json(findResult)
+    try {
+        if (!db) {
+            return res.status(500).json({ error: 'Database not connected' });
+        }
+        const collection = db.collection('passwords');
+        const passwords = await collection.find({}).toArray();
+        console.log(`Found ${passwords.length} passwords`);
+        res.json(passwords)
+    } catch (error) {
+        console.error("Error fetching passwords:", error);
+        res.status(500).json({ error: error.message })
+    }
 })
 
-
-//save a  password
+// Save password
 app.post('/', async (req, res) => {
-    const password = req.body
-    const db = client.db(dbName);
-    const collection = db.collection('passwords');
-    const findResult = await collection.insertOne(password)
-    res.send({success:true, result:findResult})
+    try {
+        if (!db) {
+            return res.status(500).json({ error: 'Database not connected' });
+        }
+        const password = req.body
+        console.log("Saving password for site:", password.site);
+        const collection = db.collection('passwords');
+        const result = await collection.insertOne(password)
+        console.log("Password saved with ID:", result.insertedId);
+        res.json({success: true, result: result})
+    } catch (error) {
+        console.error("Error saving password:", error);
+        res.status(500).json({ error: error.message })
+    }
 })
 
-
-//delete a password
+// Delete password
 app.delete('/', async (req, res) => {
-    const password = req.body
-    const db = client.db(dbName);
-    const collection = db.collection('passwords');
-    const findResult = await collection.deleteOne(password)
-    res.send({success:true, result:findResult})
+    try {
+        if (!db) {
+            return res.status(500).json({ error: 'Database not connected' });
+        }
+        const { id } = req.body
+        console.log("Deleting password with ID:", id);
+        const collection = db.collection('passwords');
+        const result = await collection.deleteOne({ id: id })
+        console.log("Delete result:", result.deletedCount);
+        res.json({success: true, result: result})
+    } catch (error) {
+        console.error("Error deleting password:", error);
+        res.status(500).json({ error: error.message })
+    }
 })
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
