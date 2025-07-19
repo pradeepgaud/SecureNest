@@ -17,7 +17,7 @@ app.use(cors({
     origin: [
         'http://localhost:3000', 
         'http://localhost:5173', 
-        'https://secure-nest-gaurd.vercel.app/'  // Yahan apna Vercel URL dalein
+        'secure-nest-2gtq-git-main-pradeep-gauds-projects.vercel.app'  // Yahan apna Vercel URL dalein
     ],
     credentials: true
 }))
