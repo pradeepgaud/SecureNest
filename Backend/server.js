@@ -17,7 +17,7 @@ app.use(cors({
     origin: [
         'http://localhost:3000', 
         'http://localhost:5173', 
-        'https://your-vercel-app.vercel.app'  // Yahan apna Vercel URL dalein
+        'https://secure-nest-gaurd.vercel.app/'  // Yahan apna Vercel URL dalein
     ],
     credentials: true
 }))
