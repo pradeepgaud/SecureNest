@@ -40,7 +40,6 @@ app.get('/test', (req, res) => {
 
 // Get all passwords
 app.get('/', async (req, res) => {
-    console.log(import.meta.env.VITE_BACKEND_URL)
     try {
         if (!db) {
             return res.status(500).json({ error: 'Database not connected' });
